@@ -6,6 +6,7 @@
 
 # requirements 
 python = 3.12
+
 Execute this comand in your environment:
 ```bash 
 pip install -r requirements.txt
