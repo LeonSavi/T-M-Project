@@ -1,3 +1,5 @@
 /tam_venv/*
+/__pychache__/*
 test.ipynb
+stocks_anomaly_finder.ipynb
 .DS_Store
