@@ -19,10 +19,6 @@ from collections import defaultdict
 
 from StockAnomaly import StockAnomaly
 
-print('loading tokenizer and Bert model')
-tokenizer = AutoTokenizer.from_pretrained("ProsusAI/finbert")
-BERTmodel = AutoModelForSequenceClassification.from_pretrained("ProsusAI/finbert")
-classifier = pipeline('text-classification',model=BERTmodel,tokenizer=tokenizer,truncation=True, max_length=512)
 
 # with ['NVIDIA','META','GOOG']  and 180 pages each: it scrapes 14226 articles
 
@@ -90,31 +86,6 @@ def return_keySentences(sentences: list, keywords: list):
             key_sentences.append(sent.strip())
     
     return ' '.join(key_sentences)
-
-
-def finbert_sentiment(text:str) -> tuple[float,float,float,str]:
-    '''https://www.youtube.com/watch?v=FRDKeNEeNAQ&t=640s'''
-    with torch.no_grad():
- 
-        inputs = tokenizer(
-            text,
-            return_tensors='pt',
-            padding=True,
-            truncation=True,
-            max_length=512     
-        )
-        
-        inputs = {k: v.to(BERTmodel.device) for k, v in inputs.items()}
-
-        outputs = BERTmodel(**inputs)
-        
-        probs = F.softmax(outputs.logits, dim=-1).squeeze()
-        
-        id2label = BERTmodel.config.id2label
-        scores = {id2label[i]: probs[i].item() for i in range(len(id2label))}
-
-        return (scores['positive'],scores['neutral'],scores['negative'],max(scores,key=scores.get))
-
 
 for stock in stocks:
     print(f'\nWorking on {stock}\n')
