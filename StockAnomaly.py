@@ -1,22 +1,28 @@
 import yfinance as yf
 import matplotlib.pyplot as plt
+import pandas as pd
+from datetime import datetime
 
 class StockAnomaly:
-    def __init__(self, stocks, history:str = "5y", start = None, end = None):
-        self.stocks = stocks
-        self.history = history
+    def __init__(self,
+                 stocks:list[str] = None,
+                 history:str = None,
+                 start:datetime|str = None,
+                 end:datetime|str = None):
+        
+        self.stocks = ["AMD", "ASML", "GOOG", "META", "NVDA"] if not stocks else stocks
+        self.history = '5y' if not history else history
         self.start = start
         self.end = end
         self.stocks_data = yf.Tickers(self.stocks)
 
         if start and end:
-            self.stocks_history = self.stocks_data.history(start=start, end=end, interval="1d")
+            self.stocks_history = self.stocks_data.history(start=self.start, end=self.end, interval="1d")
         else:
-            self.stocks_history = self.stocks_data.history(history, interval="1d")
+            self.stocks_history = self.stocks_data.history(self.history, interval="1d")
         
         self.__stocks_history_df = self.stocks_history.copy()
         self.did_calculate_anomalies = False
-
 
 
     def calculate(self, window = 30, price_z = 2.5, volume_z = 2.5):
@@ -83,7 +89,7 @@ class StockAnomaly:
         )
         output = output[output['unusual']] # Filter all unusual days
         output = output[['rolling_z_P', 'rolling_z_V']] # Retrieve only rolling values
-
+        
         output = (
             output
             .reset_index()
@@ -96,7 +102,8 @@ class StockAnomaly:
         self.__output_stocks_history = output
         return True
     
-    def get_anomalies(self, stock = None, get_list = False):
+
+    def get_anomalies(self, stock:str = None, get_dict_dates:bool = False):
         if not self.did_calculate_anomalies:
             raise Exception("Anomalies of stocks are not calculated. Run calculate() before running this function.")
         
@@ -108,9 +115,10 @@ class StockAnomaly:
             output = self.__output_stocks_history[self.__output_stocks_history["stock"] == stock].reset_index(drop=True)
         else:
             output = self.__output_stocks_history
+        
 
-        if get_list:
-            return output.values.tolist()
+        if get_dict_dates:
+            return output.groupby('stock')['date'].agg(list).to_dict()
         return output
 
 
@@ -161,4 +169,14 @@ class StockAnomaly:
             plt.title(f"{internal_stock}: Unusual Trading Days")
             plt.show()
 
+
+if '__main__' == __name__:
+
+    print('Running Test')
     
+    stock_anomaly = StockAnomaly()
+
+    stock_anomaly.calculate(window=20,price_z=2,volume_z=2)
+
+    print(stock_anomaly.get_anomalies(get_dict_dates=True))
+
