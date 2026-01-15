@@ -99,6 +99,8 @@ if __name__ == "__main__":
     df = pd.DataFrame(pandas_dct).drop_duplicates(['label', 'link'])
     
     # Save results
-    df.to_csv('scraped_data_full.csv', index=False)
+    # df.to_csv('scraped_data_full.csv', index=False)
+    df.to_parquet("scraped_data.parquet", compression="snappy")
+
     print(f"\nDone! Scraped a total of {len(df)} unique articles.")
 
