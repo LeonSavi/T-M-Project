@@ -7,6 +7,8 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import threading
 
+# Improved Version of https://www.youtube.com/watch?v=5tpEDlUCzjk
+
 # Configuration
 STOCKS = ["AMD", "ASML", "GOOG", "META", "NVDA"]
 PAGES_PER_STOCK = 500
@@ -51,7 +53,7 @@ def process_article_metadata(stock, art_soup):
 
 def scrape_stock(stock):
     """Scrapes all pages for a specific stock and then fetches article contents in parallel."""
-    print(f"\nGathering links for {stock}...")
+    print(f"\nGathering links for {stock}.")
     session = requests.Session()
     all_metadata = []
 
@@ -70,7 +72,7 @@ def scrape_stock(stock):
         except Exception as e:
             continue
 
-    print(f"Found {len(all_metadata)} articles for {stock}. Starting content download...")
+    print(f"Found {len(all_metadata)} articles for {stock}. Downloading...")
 
     # Phase 2: Multi-threaded content download
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -91,16 +93,12 @@ def scrape_stock(stock):
                     pandas_dct['fist_parag'].append(first_para)
 
 if __name__ == "__main__":
-    # Scrape stocks sequentially but articles within them in parallel
     for stock in STOCKS:
         scrape_stock(stock)
 
-    # Convert to DataFrame and cleanup
     df = pd.DataFrame(pandas_dct).drop_duplicates(['label', 'link'])
     
-    # Save results
-    # df.to_csv('scraped_data_full.csv', index=False)
     df.to_parquet("scraped_data.parquet", compression="snappy")
 
-    print(f"\nDone! Scraped a total of {len(df)} unique articles.")
+    print(f"\nScraped a total of {len(df)} articles.")
 
