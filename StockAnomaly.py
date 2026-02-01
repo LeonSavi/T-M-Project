@@ -122,7 +122,7 @@ class StockAnomaly:
         return output
 
 
-    def display_anomalies(self, stock = None):
+    def display_anomalies(self, stock = None,figsize:tuple = (12,5)):
         if not self.did_calculate_anomalies:
             raise Exception("Anomalies of stocks are not calculated. Run calculate() before running this function.")
         
@@ -138,7 +138,7 @@ class StockAnomaly:
             unusual_days = self.stocks_history[self.stocks_history["unusual", internal_stock]].index
 
             # Plot closing prices
-            plt.figure(figsize=(12,5))
+            plt.figure(figsize=figsize)
             plt.plot(self.stocks_history['Close', internal_stock], 
                     label = "Closing price"
                     )
